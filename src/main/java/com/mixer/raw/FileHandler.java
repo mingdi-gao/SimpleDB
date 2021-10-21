@@ -9,9 +9,11 @@ public class FileHandler {
         this.dbFile = new RandomAccessFile(dbFileName, "rw");
     }
 
+    // add record, column by column
     public boolean add(String name, int age, String address, String carPlateNumber, String description) throws IOException {
         // seek to the end of the file
-        this.dbFile.seek(this.dbFile.length());
+        long currentPositionToInsert = this.dbFile.length();
+        this.dbFile.seek(currentPositionToInsert);
 
         // isDeleted byte
         // record length : 1 byte
@@ -51,11 +53,20 @@ public class FileHandler {
         this.dbFile.writeInt(description.length());
         this.dbFile.write(description.getBytes());
 
+        // add start Position of current record into Index
+        Index.getInstance().add(currentPositionToInsert);
         return true;
     }
 
+    // read a row based on row number, return as Person Object
     public Person readRow(int rowNumber) throws IOException {
-        byte[] row = this.readRowRecord(rowNumber);
+        long bytePosition = Index.getInstance().getBytePosition(rowNumber);
+        // no such rowNumber in map
+        if (bytePosition == -1) {
+            return null;
+        }
+        // get raw record
+        byte[] row = this.readRawRecord(bytePosition);
         Person person = new Person();
         DataInputStream stream = new DataInputStream(new ByteArrayInputStream(row));
 
@@ -85,14 +96,15 @@ public class FileHandler {
         return person;
     }
 
-    private byte[] readRowRecord(int rowNumber) throws IOException {
-        this.dbFile.seek(0);
+    // read raw data, return as bytes[]
+    private byte[] readRawRecord(long bytePositionOfRow) throws IOException {
+        this.dbFile.seek(bytePositionOfRow);
         if (this.dbFile.readBoolean()) {
             return new byte[0];
         }
-        this.dbFile.seek(rowNumber + 1);
+        this.dbFile.seek(bytePositionOfRow + 1);
         int recordLength = this.dbFile.readInt();
-        this.dbFile.seek(rowNumber + 5);
+        this.dbFile.seek(bytePositionOfRow + 5);
 
         byte[] data = new byte[recordLength];
         this.dbFile.read(data);

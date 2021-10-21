@@ -1,6 +1,7 @@
 package com.mixer.testapp;
 
 import com.mixer.raw.FileHandler;
+import com.mixer.raw.Index;
 import com.mixer.raw.Person;
 
 import java.io.IOException;
@@ -17,7 +18,9 @@ public class TestApp {
             Person person = fh.readRow(0);
             fh.close();
 
+            System.out.println("Total number of rows in database: " + Index.getInstance().getTotalRowNumber());
             System.out.println(person);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
