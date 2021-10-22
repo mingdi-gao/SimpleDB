@@ -21,6 +21,9 @@ public final class Index {
         return index;
     }
 
+    // add a entry to the map
+    // At this moment this index is not able to remove deleted Index record
+    // Neither there are any delete method in file handler
     public void add(long bytePosition) {
         this.rowIndex.put(this.totalRowNumber, bytePosition);
         this.totalRowNumber++;

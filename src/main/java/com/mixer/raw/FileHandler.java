@@ -19,6 +19,10 @@ public class FileHandler {
         // record length : 1 byte
         // each field and field name
 
+        /**
+         * SO THE RECORD IS COMPOSED LIKE:
+         * 4, name, age, address, carPlage, carPlateNumber, dex
+         */
         // calculate record length
         int length = 4 + // name length
                     name.length() +
@@ -110,6 +114,32 @@ public class FileHandler {
         this.dbFile.read(data);
 
         return data;
+    }
+
+    public void loadAllDataToIndex() throws IOException {
+        if (this.dbFile.length() == 0) {
+            return ;
+        }
+        // count unit is byte
+        long currentPos = 0;
+        long rowNum = 0;
+
+        while(currentPos < this.dbFile.length()) {
+            // move filePtr to start position of next record
+            this.dbFile.seek(currentPos);
+            // first char represents whether this record is deleted or not
+            boolean isDeleted = this.dbFile.readBoolean();
+            if (!isDeleted) {
+                Index.getInstance().add(currentPos);
+                rowNum++;
+            }
+            currentPos += 1;
+            this.dbFile.seek(currentPos);
+            int recordLength = this.dbFile.readInt();
+            currentPos +=4;
+            currentPos += recordLength;
+        }
+        System.out.println("Total row number in Database: " + rowNum);
     }
 
     public void close() throws IOException {
