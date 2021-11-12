@@ -123,6 +123,7 @@ public class FileHandler {
         // count unit is byte
         long currentPos = 0;
         long rowNum = 0;
+        long deletedRows = 0;
 
         while(currentPos < this.dbFile.length()) {
             // move filePtr to start position of next record
@@ -132,6 +133,8 @@ public class FileHandler {
             if (!isDeleted) {
                 Index.getInstance().add(currentPos);
                 rowNum++;
+            } else {
+                deletedRows++;
             }
             currentPos += 1;
             this.dbFile.seek(currentPos);
@@ -139,10 +142,24 @@ public class FileHandler {
             currentPos +=4;
             currentPos += recordLength;
         }
-        System.out.println("Total row number in Database: " + rowNum);
+
+        System.out.println("After startup: total row number in Database and Index: " + rowNum);
+        System.out.println("After startup: total deleted row number in Database and Index: " + deletedRows);
     }
 
     public void close() throws IOException {
         this.dbFile.close();
+    }
+
+    public void deleteRow(int rowNumber) throws IOException{
+        long bytePositionOfRecord = Index.getInstance().getBytePosition(rowNumber);
+        if (bytePositionOfRecord == -1) {
+            throw new IOException("Row does not excists in Index");
+        }
+        this.dbFile.seek(bytePositionOfRecord);
+        this.dbFile.writeBoolean(true);
+
+        // update the index since record is deleted;
+        Index.getInstance().remove(rowNumber);
     }
 }
