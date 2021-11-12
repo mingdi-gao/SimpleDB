@@ -5,6 +5,7 @@ import com.mixer.dbserver.DBServer;
 import com.mixer.raw.Index;
 import com.mixer.raw.Person;
 import com.mixer.util.DebugRowInfo;
+import org.junit.Assert;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,13 +30,16 @@ public class TestApp {
     }
 
     void listAllRecords() throws IOException {
-        DBServer db = new DBServer(dbFile);
-        List<DebugRowInfo> result = db.listAllRowswithDebug();
-        System.out.println("Total row number: " + Index.getInstance().getTotalRowNumber());
-        for (DebugRowInfo dri : result) {
-            prettyPrintRow(dri);
+        try(DBServer db = new DBServer(dbFile)) {
+            List<DebugRowInfo> result = db.listAllRowswithDebug();
+            System.out.println("Total row number: " + Index.getInstance().getTotalRowNumber());
+            for (DebugRowInfo dri : result) {
+                prettyPrintRow(dri);
+            }
+        } catch (IOException ioe) {
+            Assert.fail();
         }
-        db.close();
+
     }
 
     private void prettyPrintRow(DebugRowInfo dri) {
@@ -52,17 +56,22 @@ public class TestApp {
     }
 
     void delete(int number) throws Exception {
-        DB db = new DBServer(dbFile);
-        db.delete(number);
-        db.close();
+        try (DB db = new DBServer(dbFile)) {
+            db.delete(number);
+        } catch (IOException ioe) {
+            throw ioe;
+        }
+
     }
     void fillDB(int rowNumber) throws Exception{
 
-        DB db = new DBServer(dbFile);
-        for (int i = 0; i < rowNumber; i++) {
-            Person p = new Person("Jonh" + i, 44, "Berlin", "www-404", "This is a description");
-            db.add(p);
+        try (DB db = new DBServer(dbFile)) {
+            for (int i = 0; i < rowNumber; i++) {
+                Person p = new Person("Jonh" + i, 44, "Berlin", "www-404", "This is a description");
+                db.add(p);
+            }
+        } catch (IOException ioe) {
+            throw ioe;
         }
-        db.close();
     }
 }
