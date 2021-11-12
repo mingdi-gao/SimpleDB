@@ -14,27 +14,26 @@ public class DBBasicTests {
     private DB db;
     private String dbFileName = "testdb.db";
 
+
     @Test
     public void testAdd() {
         try {
-            this.db.add("John", 44, "Berlin", "www-404", "This is a description");
+            Person p = new Person("Jonh", 44, "Berlin", "www-404", "This is a description");
+            this.db.add(p);
             Assert.assertEquals(Index.getInstance().getTotalRowNumber(), 1);
-        } catch (IOException e) {
+        } catch (Exception e) {
             Assert.fail();
         }
     }
     @Test
     public void testRead() {
         try {
-            this.db.add("John", 44, "Berlin", "www-404", "This is a description");
+            Person p = new Person("Jonh", 44, "Berlin", "www-404", "This is a description");
+            this.db.add(p);
             Assert.assertEquals(Index.getInstance().getTotalRowNumber(), 1);
             Person person = this.db.read(0);
-            Assert.assertEquals(person.name,"John");
-            Assert.assertEquals(person.address,"Berlin");
-            Assert.assertEquals(person.carPlateNumber,"www-404");
-            Assert.assertEquals(person.description,"This is a description");
-
-        } catch (IOException e) {
+            Assert.assertEquals(person.name,"");
+        } catch (Exception e) {
             Assert.fail();
         }
     }
@@ -42,12 +41,45 @@ public class DBBasicTests {
     @Test
     public void testDelete() {
         try {
-            this.db.add("John", 44, "Berlin", "www-404", "This is a description");
+            Person p = new Person("Jonh", 44, "Berlin", "www-404", "This is a description");
+
+            this.db.add(p);
             Assert.assertEquals(Index.getInstance().getTotalRowNumber(), 1);
             this.db.delete(0);
             Assert.assertEquals(Index.getInstance().getTotalRowNumber(), 0);
+        }catch (Exception e) {
+            Assert.fail();
+        }
+    }
 
-        } catch (IOException e) {
+    @Test
+    public void updateByName() {
+        try {
+            Person p = new Person("John", 44, "Berlin", "www-404", "This is a description");
+
+            this.db.add(p);
+            Person p2 = new Person("John2", 44, "Berlin", "www-404", "This is a description");
+            this.db.update("John", p2);
+
+            Person result = this.db.read(0);
+            Assert.assertEquals(result.name,"John2");
+        }catch (Exception e) {
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void updateByRowNumber() {
+        try {
+            Person p = new Person("John", 44, "Berlin", "www-404", "This is a description");
+
+            this.db.add(p);
+            Person p2 = new Person("John2", 44, "Berlin", "www-404", "This is a description");
+            this.db.update(0, p2);
+
+            Person result = this.db.read(0);
+            Assert.assertEquals(result.name,"John2");
+        }catch (Exception e) {
             Assert.fail();
         }
     }
@@ -62,7 +94,11 @@ public class DBBasicTests {
     }
 
     @After
-    public void after() throws IOException {
-        this.db.close();
+    public void after() {
+        try {
+            this.db.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

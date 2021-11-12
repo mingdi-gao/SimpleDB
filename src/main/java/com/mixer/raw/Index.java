@@ -7,11 +7,15 @@ import java.util.Map;
 public final class Index {
     private static Index index;
     private long totalRowNumber;
-    // row number -> byte position
+    // Long row number -> Long byte position
     private Map<Long, Long> rowIndex;
+
+    // String name -> Long row number
+    private HashMap<String, Long> nameIndex;
 
     private Index() {
         this.rowIndex = new HashMap<>();
+        this.nameIndex = new HashMap<>();
     }
 
     public static Index getInstance() {
@@ -33,17 +37,35 @@ public final class Index {
     public long getBytePosition(long rowNumber) {
         return this.rowIndex.getOrDefault(rowNumber, -1L);
     }
-    public void remove(int row) {
+    public void remove(long row) {
         this.rowIndex.remove(row);
         this.totalRowNumber--;
+
+//        String nameTODelete= this.nameIndex.search(2, (k, v) -> v == row ? k : null);
+//        if (nameTODelete != null) {
+//            this.nameIndex.remove(nameTODelete);
+//        }
     }
 
     public long getTotalRowNumber() {
         return this.totalRowNumber;
     }
 
+    public void addNameToIndex(final String name, long rowIndex) {
+        this.nameIndex.put(name, rowIndex);
+    }
+
+    public boolean hasNameInIndex(final String name) {
+        return this.nameIndex.containsKey(name);
+    }
+
+    public long getRowNumberByName(final String name) {
+        return this.nameIndex.get(name);
+    }
+
     public void clear() {
         this.totalRowNumber = 0;
         this.rowIndex.clear();
+        this.nameIndex.clear();
     }
 }
